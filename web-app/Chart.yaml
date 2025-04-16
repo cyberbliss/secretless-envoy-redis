@@ -1,0 +1,4 @@
+apiVersion: v1
+name: spiffe-envoy-webapp-demo
+description: Demo web application using SPIFFE and Envoy to provide mTLS and authentication
+version: 0.1.0

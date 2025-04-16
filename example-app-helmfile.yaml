@@ -1,0 +1,10 @@
+---
+helmDefaults:
+  wait: true
+  timeout: 300
+---
+releases:
+- name: example-app
+  version: "v0.1.0"
+  chart: ./example-app
+  namespace: sandbox

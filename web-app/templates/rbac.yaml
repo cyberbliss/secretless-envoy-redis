@@ -1,0 +1,54 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: backend
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "web-app.labels" . | nindent 4 }}
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: frontend
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "web-app.labels" . | nindent 4 }}
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: frontend-2
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "web-app.labels" . | nindent 4 }}
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: cert-request
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "web-app.labels" . | nindent 4 }}
+rules:
+- apiGroups: ["cert-manager.io"]
+  resources: ["certificaterequests"]
+  verbs: ["create"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: cert-request
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "web-app.labels" . | nindent 4 }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: cert-request
+subjects:
+- kind: ServiceAccount
+  name: backend
+- kind: ServiceAccount
+  name: frontend
+- kind: ServiceAccount
+  name: frontend-2

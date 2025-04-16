@@ -1,0 +1,18 @@
+---
+helmDefaults:
+  wait: true
+  timeout: 300
+---
+
+releases:
+- name: redis-app
+  version: "v0.1.0"
+  chart: ./redis-app
+  namespace: redis-envoy-cm
+  values:
+  - spiffeTrustDomain: {{ requiredEnv "SPIFFE_TRUST_DOMAIN" }}
+  - validSA:
+    - "redis-client"
+#    - "redis-client2" 
+  - perfTesting:
+      enable: false

@@ -1,0 +1,55 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: redis-server
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "redis-app.labels" . | nindent 4 }}
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: redis-client
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "redis-app.labels" . | nindent 4 }}
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: redis-client2
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "redis-app.labels" . | nindent 4 }}
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: cert-request
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "redis-app.labels" . | nindent 4 }}
+rules:
+- apiGroups: ["cert-manager.io"]
+  resources: ["certificaterequests"]
+  verbs: ["create"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: cert-request
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "redis-app.labels" . | nindent 4 }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: cert-request
+subjects:
+- kind: ServiceAccount
+  name: redis-server
+- kind: ServiceAccount
+  name: redis-client
+- kind: ServiceAccount
+  name: redis-client2
+---

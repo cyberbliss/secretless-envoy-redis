@@ -1,0 +1,46 @@
+# The user/SA creating the CertificateRequest must be bound to an RBAC role allowing them
+# to use the policy. This ClusterRole allows use of any policy.
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: cert-manager-policy:any
+rules:
+  - apiGroups: ["policy.cert-manager.io"]
+    resources: ["certificaterequestpolicies"]
+    verbs: ["use"]
+
+---
+
+# This binding allows any authenticated user to use any policy
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: cert-manager-policy:any
+roleRef:
+# ClusterRole or Role _must_ be bound to a user for the policy to be considered.
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: cert-manager-policy:any
+subjects:
+# The users who should be bound to the policies defined.
+# Note that in the case of users creating Certificate resources, cert-manager
+# is the entity that is creating the actual CertificateRequests, and so the
+# cert-manager controller's
+# Service Account should be bound instead.
+- kind: Group
+  name: system:authenticated
+  apiGroup: rbac.authorization.k8s.io
+---
+apiVersion: policy.cert-manager.io/v1alpha1
+kind: CertificateRequestPolicy
+metadata:
+  name: allow-all
+spec:
+  allowed:
+    commonName: {value: "*"}
+    dnsNames: {values: ["*"]}
+    isCA: true
+  selector:
+    issuerRef: {}

@@ -1,0 +1,31 @@
+crds:
+  enabled: true
+global:
+  leaderElection:
+    namespace: cert-manager
+# Resources for controller
+resources:
+  requests:
+    cpu: 50m
+    memory: 52M
+  limits:
+    cpu: 100m
+    memory: 103M
+# Resources for the Webhook
+webhook:
+  resources:
+    requests:
+      cpu: 50m
+      memory: 52M
+    limits:
+      cpu: 100m
+      memory: 103M
+# Resources for the cainjector
+cainjector:
+  resources:
+    requests:
+      cpu: 50m
+      memory: 52M
+    limits:
+      cpu: 100m
+      memory: 103M

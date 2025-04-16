@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: redis-config
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "redis-app.labels" . | nindent 4 }}
+data:
+  redis-config: |
+  {{- if .Values.perfTesting.enable }}
+    bind * -::*
+  {{- else }}
+    bind 127.0.0.1 -::1
+  {{- end }}

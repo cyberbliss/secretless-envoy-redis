@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: backend-balance-json-data
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "web-app.labels" . | nindent 4 }}
+data:
+  balance_1: |-
+    {
+      "balance": 10.95
+    }
+  balance_2: |-
+    {
+      "balance": 310
+    }

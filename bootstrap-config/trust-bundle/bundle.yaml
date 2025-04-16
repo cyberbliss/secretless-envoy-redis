@@ -1,0 +1,13 @@
+apiVersion: trust.cert-manager.io/v1alpha1
+kind: Bundle
+metadata:
+  name: csi-driver-spiffe-bundle
+spec:
+  sources:
+  - useDefaultCAs: false
+  - secret:
+      name: "csi-driver-spiffe-ca"
+      key: "tls.crt"
+  target:
+    configMap:
+      key: "spiffe-ca-tls.pem"

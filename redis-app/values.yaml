@@ -1,0 +1,11 @@
+envoy:
+  image: envoyproxy/envoy:v1.25.1
+redis:
+  image: redis:7.4
+spiffeTrustDomain: "mytd.example.com"
+validSA:
+  - "redis-client"
+#  - "redis-client2"
+perfTesting:
+  enable: false
+  image: redislabs/memtier_benchmark:latest

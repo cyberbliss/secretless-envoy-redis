@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: redis-envoy
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "redis-app.labels" . | nindent 4 }}
+data:
+  sds-validation.yaml: |-
+    {{ tpl (.Files.Get "config/sds-validation.yaml") . }}
+  sds.yaml: |-
+    {{ tpl (.Files.Get "config/sds.yaml") (dict "std" .Values.spiffeTrustDomain "ns" .Release.Namespace "sa" "redis-server" "Template" $.Template) }}
+  envoy.yaml: |-
+    {{ tpl (.Files.Get "config/redis-server-envoy.yaml") (dict "std" .Values.spiffeTrustDomain "id" "redis-server" "ns" .Release.Namespace "sdsSA" "redis-server" "validSA" .Values.validSA "Template" $.Template) | nindent 4 }}

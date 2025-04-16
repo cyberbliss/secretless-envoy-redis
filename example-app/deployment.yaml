@@ -1,0 +1,30 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: my-csi-app
+  labels:
+    app: my-csi-app
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: my-csi-app
+  template:
+    metadata:
+      labels:
+        app: my-csi-app
+    spec:
+      serviceAccountName: example-app
+      containers:
+        - name: my-frontend
+          image: busybox
+          imagePullPolicy: IfNotPresent
+          command: [ "sleep", "1000000" ]
+          volumeMounts:
+          - mountPath: "/var/run/secrets/spiffe.io"
+            name: spiffe
+      volumes:
+        - name: spiffe
+          csi:
+            driver: spiffe.csi.cert-manager.io
+            readOnly: true

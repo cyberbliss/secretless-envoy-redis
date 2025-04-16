@@ -1,0 +1,61 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: frontend-2
+  labels:
+    {{- include "web-app.labels" . | nindent 4 }}
+    app: frontend-2
+spec:
+  selector:
+    matchLabels:
+      app: frontend-2
+  template:
+    metadata:
+      labels:
+        app: frontend-2
+    spec:
+      serviceAccountName: frontend-2
+      containers:
+      - name: envoy
+        image: {{ .Values.envoy.image }}
+        imagePullPolicy: Always
+        args: ["-l", "debug", "--local-address-ip-version", "v4", "-c", "/run/envoy/envoy.yaml", "--base-id", "1"]
+        volumeMounts:
+        - name: envoy-config
+          mountPath: "/run/envoy"
+          readOnly: true 
+        - name: spiffe
+          mountPath: /run/spiffe
+          readOnly: true
+        - name: spiffe-ca
+          mountPath: /run/spiffe-ca
+          readOnly: true      
+      - name: frontend-2
+        imagePullPolicy: IfNotPresent
+        image: {{ .Values.frontend.image }}
+        command: ["/opt/symbank-webapp/symbank-webapp", "-config", "/run/symbank-webapp/config/symbank-webapp-2.conf"]
+        ports:
+        - containerPort: 3002
+        volumeMounts:
+        - name: symbank-webapp-2-config
+          mountPath: /run/symbank-webapp/config
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+      volumes:
+      - name: envoy-config
+        configMap:
+          name: frontend-2-envoy
+      - name: spiffe
+        csi:
+          driver: spiffe.csi.cert-manager.io
+          readOnly: true
+          volumeAttributes:
+            spiffe.csi.cert-manager.io/fs-group: "1000"
+      - name: spiffe-ca
+        configMap:
+          name: csi-driver-spiffe-bundle
+      - name: symbank-webapp-2-config
+        configMap:
+          name: symbank-webapp-2-config

@@ -1,0 +1,11 @@
+{{- define "sds.name" -}}
+{{- printf "spiffe://%s/ns/%s/sa/%s" .std .ns .sa }}
+{{- end -}}
+resources:
+    - "@type": type.googleapis.com/envoy.extensions.transport_sockets.tls.v3.Secret
+      name: {{ include "sds.name" . | quote }}
+      tls_certificate:
+          certificate_chain:
+              filename: "/run/spiffe/tls.crt"
+          private_key:
+              filename: "/run/spiffe/tls.key"

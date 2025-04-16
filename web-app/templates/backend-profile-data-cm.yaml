@@ -1,0 +1,18 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: backend-profile-json-data
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "web-app.labels" . | nindent 4 }}
+data:
+  profile_1: |-
+    {
+      "Name": "Jacob Marley",
+      "Address": "48-49 Doughty ST, Holborn - London WC1N 2LX.UK"
+    }
+  profile_2: |-
+    {
+      "Name": "Alex Fergus",
+      "Address": "Sir Matt Busby Way, Trafford Park, Stretford, Manchester M16 0RA, Reino Unido"
+    }

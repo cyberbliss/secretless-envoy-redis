@@ -1,0 +1,6 @@
+resources:
+    - "@type": type.googleapis.com/envoy.extensions.transport_sockets.tls.v3.Secret
+      name: {{ printf "spiffe://%s" .Values.spiffeTrustDomain | quote }}
+      validation_context:
+          trusted_ca:
+              filename: "/run/spiffe-ca/spiffe-ca-tls.pem"

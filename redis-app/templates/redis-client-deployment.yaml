@@ -1,0 +1,61 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: redis-client
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "redis-app.labels" . | nindent 4 }}
+    app: redis-client
+spec:
+  selector:
+    matchLabels:
+      app: redis-client
+  template:
+    metadata:
+      labels:
+        app: redis-client
+    spec:
+      serviceAccountName: redis-client
+      containers:
+      - name: envoy
+        image: {{ .Values.envoy.image }}
+        imagePullPolicy: Always
+        args: ["-l", "debug", "--local-address-ip-version", "v4", "-c", "/run/envoy/envoy.yaml"]
+        volumeMounts:
+        - name: envoy-config
+          mountPath: "/run/envoy"
+          readOnly: true
+        - name: spiffe
+          mountPath: /run/spiffe
+          readOnly: true
+        - name: spiffe-ca
+          mountPath: /run/spiffe-ca
+          readOnly: true
+      - name: redis-client
+        {{- if .Values.perfTesting.enable }}
+        image: {{ .Values.perfTesting.image }}
+        {{- else }}
+        image: {{ .Values.redis.image }}
+        {{- end }}
+        command:
+        - sleep
+        - infinity
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+      volumes:
+      - name: envoy-config
+        configMap:
+          name: redis-client-envoy
+      - name: spiffe
+        csi:
+          driver: spiffe.csi.cert-manager.io
+          readOnly: true
+          volumeAttributes:
+            spiffe.csi.cert-manager.io/fs-group: "1000"
+      - name: spiffe-ca
+        configMap:
+          name: csi-driver-spiffe-bundle
+

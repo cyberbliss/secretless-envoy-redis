@@ -1,0 +1,73 @@
+repositories:
+- name: cert-manager
+  url: https://charts.jetstack.io
+
+---
+helmDefaults:
+  wait: true
+  timeout: 300
+---
+
+releases:
+- name: cert-manager
+  version: v{{ requiredEnv "CERT_MANAGER_VERSION" }}
+  chart: cert-manager/cert-manager
+  namespace: cert-manager
+  values:
+  - "./bootstrap-config/cert-manager-values.yaml"
+  - disableAutoApproval: true
+  
+- name: approver-policy
+  version: v{{ requiredEnv "APPROVER_POLICY_VERSION" }}
+  chart: cert-manager/cert-manager-approver-policy
+  namespace: cert-manager
+  needs: 
+  - cert-manager/cert-manager
+
+- name: cert-request-policy
+  version: "v0.1.0"
+  chart: ./bootstrap-config/approver-policies
+  namespace: cert-manager
+  disableValidationOnInstall: true
+  needs:
+  - cert-manager/approver-policy
+
+- name: cluster-issuer
+  version: "v0.1.0"
+  chart: ./bootstrap-config/cluster-issuer
+  namespace: cert-manager
+  disableValidationOnInstall: true
+  needs:
+  - cert-manager/cert-request-policy
+
+- name: trust-manager
+  version: v{{ requiredEnv "TRUST_MANAGER_VERSION" }}
+  chart: cert-manager/trust-manager
+  namespace: cert-manager
+  disableValidationOnInstall: true
+  needs:
+  - cert-manager/cert-request-policy
+
+- name: cst-driver-spiffe
+  version: v{{ requiredEnv "CSI_DRIVER_SPIFFE_VERSION" }}
+  chart: cert-manager/cert-manager-csi-driver-spiffe
+  namespace: cert-manager
+  disableValidationOnInstall: true
+  needs:
+  - cert-manager/cluster-issuer
+  values:
+  - app:
+      logLevel: 1
+      trustDomain: {{ requiredEnv "SPIFFE_TRUST_DOMAIN" }}
+      issuer:
+        name: csi-driver-spiffe-ca
+        kind: ClusterIssuer
+        group: cert-manager.io
+
+- name: trust-bundle
+  version: "v0.1.0"
+  chart: ./bootstrap-config/trust-bundle
+  namespace: cert-manager
+  disableValidationOnInstall: true
+  needs:
+  - cert-manager/trust-manager

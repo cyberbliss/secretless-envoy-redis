@@ -1,0 +1,4 @@
+apiVersion: v1
+name: spiffe-envoy-redis-demo
+description: Demo application using SPIFFE and Envoy to provide mTLS and authentication between a Redis client and Redis server
+version: 0.1.0
