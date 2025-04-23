@@ -17,7 +17,7 @@ spec:
       serviceAccountName: example-app
       containers:
         - name: my-frontend
-          image: busybox
+          image: alpine/openssl:latest
           imagePullPolicy: IfNotPresent
           command: [ "sleep", "1000000" ]
           volumeMounts:

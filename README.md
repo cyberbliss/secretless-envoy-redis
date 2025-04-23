@@ -27,7 +27,7 @@ trust-manager                             1/1     1            1           2m7s
 
 ## Install example-app (optional)
 
-This example-app just deploys a busybox Pod with a csi-driver-spiffe volume mounted so that its X509 SVID can be accessed from the Pod's container.
+This example-app just deploys an Alpine openssl Pod with a csi-driver-spiffe volume mounted so that its X509 SVID can be accessed from the Pod's container.
 
 ```bash
 set -a; source .env; set +a; helmfile apply --file ./example-app-helmfile.yaml --interactive
@@ -44,10 +44,10 @@ lrwxrwxrwx    1 root     root            14 Apr 16 07:48 tls.key -> ..data/tls.k
 /var/run/secrets/spiffe.io #
 ```
 
-Busybox doesn't include openssl, so to view the cert copy the contents of tls.crt and pipe it into openssl on your local machine, e.g.
+To view the cert:
 
 ```bash
-echo "-----BEGIN CERTIFICATE-----\nMIICi...RhpTBA==\n-----END CERTIFICATE-----" | openssl x509 -text -noout
+openssl x509 -in /var/run/secrets/spiffe.io/tls.crt -text -noout
 ```
 
 Notice that:
