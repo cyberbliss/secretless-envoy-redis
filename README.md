@@ -11,7 +11,7 @@ PoC showing a secretless broker for Redis using Envoy and cert-manager.
 cert-manager plus its addons are used to generate, sign, distribute and manage X509 SVIDs. These all need to be installed first and it is helpful to do it in a deterministic order, hence using Helmfile to manage this.
 
 ```bash
- set -a; source .env; set +a; helmfile apply --file ./bootstrap-helmfile.yaml --interactive
+set -a; source .env; set +a; helmfile apply --file ./bootstrap-helmfile.yaml.gotmpl --interactive
 ```
 
 After a few minutes the various deployments in the cert-manager namespace should be ready:
@@ -30,7 +30,7 @@ trust-manager                             1/1     1            1           2m7s
 This example-app just deploys an Alpine openssl Pod with a csi-driver-spiffe volume mounted so that its X509 SVID can be accessed from the Pod's container.
 
 ```bash
-set -a; source .env; set +a; helmfile apply --file ./example-app-helmfile.yaml --interactive
+set -a; source .env; set +a; helmfile apply --file ./example-app-helmfile.yaml.gotmpl --interactive
 ```
 
 The example-app Pod is deployed into the `sandbox` namespace. Once it is running you can exec into it and view its X509 crt and key files (mounted in /var/run/secrets/spiffe.io).
@@ -65,7 +65,7 @@ Notice that:
 The web-app application consists of a Backend Pod, which serves some REST endpoints providing bank account data, and 2 Frontend Pods which call the backend APIs and render the data into a web page. Each Frontend Pod displays a different account. The frontend and backend communicate via Envoy proxy sidecars; these sidecars establish a mTLS connection between frontend and backend using each Pod's SVID. Furthermore, the backend Pod's Envoy config is setup to validate which SVIDs are permitted to call the backend API endpoints, i.e. not only does the SVID need to be valid it also has to be explicitly permitted to call the APIs, thus providing both authn and authz. 
 
 ```bash
-set -a; source .env; set +a; helmfile apply --file ./web-app-helmfile.yaml --interactive
+set -a; source .env; set +a; helmfile apply --file ./web-app-helmfile.yaml.gotmpl --interactive
 ```
 
 To control which frontend Pods can call the Backend APIs change the values of `validSA` in `web-app-helmfile.yaml`:
@@ -95,12 +95,12 @@ The redis-app application consists of a Redis server Pod and 2 Redis client Pods
 3. Using Envoy's Redis proxy to control which commands a client can successfully execute against the server, i.e. no admin related commands
 
 ```bash
-set -a; source .env; set +a; helmfile apply --file ./redis-app-helmfile.yaml --interactive
+set -a; source .env; set +a; helmfile apply --file ./redis-app-helmfile.yaml.gotmpl --interactive
 ```
 
 Once all Pods are running exec into the `redis-client` Pod and use the `redis-cli` to connect: `redis-cli -h localhost -p 5000`; commands like `PING`, `SET` and `GET` will work correctly. Certain admin related commands will not work because not only is Envoy used to provide a mTLS connection and control which client Pod can connect, the Envoy sidecar in the server Pod also uses a [Redis proxy](https://www.envoyproxy.io/docs/envoy/latest/intro/arch_overview/other_protocols/redis) which only supports a subset of Redis commands. 
 
-To enable both client Pods to connect to the server edit `redis-app-helmfile.yaml` like so:
+To enable both client Pods to connect to the server edit `redis-app-helmfile.yaml.gotmpl` like so:
 
 ```yaml
   - validSA:
